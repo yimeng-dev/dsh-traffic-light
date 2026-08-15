@@ -1,6 +1,6 @@
 {
   "name": "dsh-traffic-light",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Floating desktop traffic lights for multiple DeepSeek Harness sessions",
   "type": "module",
   "license": "MIT",
