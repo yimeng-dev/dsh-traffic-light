@@ -1,0 +1,9 @@
+# DSH bundle patch loaded automatically by `dsh plugin add dsh-traffic-light`.
+- insert:
+    - id: dsh-traffic-light
+      name: 'dsh-traffic-light'
+      config:
+        basePath: /dsh-traffic-light
+        completedHoldMs: 90000
+        stateFile: ~/.dsh/dsh-traffic-light/state.json
+        settingsFile: ~/.dsh/dsh-traffic-light/settings.json

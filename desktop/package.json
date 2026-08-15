@@ -1,0 +1,6 @@
+{
+  "name": "dsh-traffic-light-desktop",
+  "private": true,
+  "type": "module",
+  "main": "../dist/desktop/main.js"
+}

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "generatedAt": 1786784300000,
+  "aggregate": "failed",
+  "online": true,
+  "sessions": [
+    {
+      "id": "fixture-failed",
+      "shortId": "failed",
+      "name": "Deploy",
+      "createdAt": 1786783900000,
+      "agentLive": true,
+      "sessionLive": true,
+      "driverStatus": "idle",
+      "state": "failed",
+      "stateSince": 1786783990000,
+      "detail": "Agent failed"
+    },
+    {
+      "id": "fixture-running",
+      "shortId": "running",
+      "name": "Indexing",
+      "createdAt": 1786783900000,
+      "agentLive": true,
+      "sessionLive": true,
+      "driverStatus": "running",
+      "state": "running",
+      "stateSince": 1786783990000,
+      "detail": "Agent driver is active"
+    },
+    {
+      "id": "fixture-attention",
+      "shortId": "attention",
+      "name": "Approval",
+      "createdAt": 1786783900000,
+      "agentLive": true,
+      "sessionLive": true,
+      "driverStatus": "running",
+      "state": "attention",
+      "stateSince": 1786783990000,
+      "detail": "Waiting for an approval decision"
+    }
+  ]
+}

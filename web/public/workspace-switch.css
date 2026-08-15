@@ -1,0 +1,47 @@
+/*
+ * The menu item is cloned from a real DSH action item in workspace-switch.js.
+ * Do not restyle its geometry here: DSH owns the row height, typography,
+ * padding, hover background and corner radius. Keeping those official rules
+ * makes the plugin action sit naturally beside Rename/Branch/Archive.
+ */
+.dsh-traffic-menu-item[aria-disabled="true"],
+.dsh-traffic-menu-item:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+/* Only used if a future DSH build renders a menu without a clonable action. */
+.dsh-traffic-menu-item[data-dsh-traffic-fallback="true"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dsh-traffic-menu-item[data-dsh-traffic-fallback="true"]:hover {
+  background: var(--dsw-alias-interactive-bg-hover, rgb(0 0 0 / 7%));
+}
+
+.dsh-traffic-menu-item[data-error="true"] {
+  background: rgb(255 77 79 / 12%);
+  animation: dsh-traffic-menu-item-shake .18s ease-in-out 2;
+}
+
+@keyframes dsh-traffic-menu-item-shake {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(1.5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dsh-traffic-menu-item[data-error="true"] {
+    animation: none;
+  }
+}

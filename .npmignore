@@ -1,0 +1,11 @@
+# Local-only development files are kept outside the public npm artifact.
+local/
+.idea/
+/pnpm-workspace.yaml
+/traffic-light.cordis.yml
+.DS_Store
+*.log
+
+# npm's `files` allowlist already selects dist/, docs/, cordis.patch.yml,
+# README.md, README.en.md, and LICENSE. Keep this denylist as an explicit
+# guard for future additions.
