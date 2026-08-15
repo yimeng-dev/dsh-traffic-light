@@ -284,11 +284,19 @@
   document.addEventListener('click', event => {
     const target = event.target instanceof Element ? event.target : undefined
     const row = target?.closest(sessionRowSelector)
-    if (!(row instanceof HTMLElement)) return
-    const sessionId = row.dataset.dshTrafficSessionId
-    if (sessionId === undefined) return
-    state.activeMenuSessionId = sessionId
-    window.setTimeout(injectMenuItems, 0)
+    if (row instanceof HTMLElement) {
+      const sessionId = row.dataset.dshTrafficSessionId
+      if (sessionId !== undefined) {
+        state.activeMenuSessionId = sessionId
+        window.setTimeout(injectMenuItems, 0)
+      }
+      return
+    }
+
+    // Do not let a Workspace menu reuse the last Session id. DSH renders both
+    // menus in a portal, so the menu itself is not enough to identify which
+    // row opened it; the row click is the authoritative Session context.
+    state.activeMenuSessionId = undefined
   }, true)
   window.addEventListener('focus', () => { void refresh() })
   document.addEventListener('visibilitychange', () => {
