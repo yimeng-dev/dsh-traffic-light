@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { extname, resolve, sep } from 'node:path'
 import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import type { DashboardSnapshot } from './contracts.js'
+import type { DshLocale } from './locale.js'
 import type { SessionSwitchSnapshot } from './session-settings.js'
 
 type SnapshotProvider = () => DashboardSnapshot
@@ -67,6 +68,7 @@ export interface RouteOptions {
   snapshot: SnapshotProvider
   reset: () => DashboardSnapshot
   sessions: () => Promise<SessionSwitchSnapshot>
+  localePreference: () => DshLocale | undefined
   toggleSession: (sessionId: string, enabled: boolean) => Promise<SessionSwitchSnapshot>
   sse: SseHub
 }
@@ -79,6 +81,7 @@ export function registerRoutes(options: RouteOptions): () => void {
     snapshot,
     reset,
     sessions,
+    localePreference,
     toggleSession,
     sse,
   } = options
@@ -111,7 +114,10 @@ export function registerRoutes(options: RouteOptions): () => void {
       handler: async (req, res) => {
         if (req.method !== 'GET') return methodNotAllowed(res, 'GET')
         try {
-          sendJson(res, 200, await sessions())
+          sendJson(res, 200, {
+            ...await sessions(),
+            localePreference: localePreference(),
+          })
         } catch (error) {
           sendJson(res, 500, { error: messageForError(error) })
         }

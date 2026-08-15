@@ -16,7 +16,45 @@
     flatSessions: [],
     busyIds: new Set(),
     activeMenuSessionId: undefined,
+    locale: resolveLocale(),
     scheduled: false,
+  }
+
+  function resolveLocale(preference) {
+    if (preference === 'zh' || preference === 'en') return preference
+    const tags = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ]
+    for (const tag of tags) {
+      if (typeof tag !== 'string') continue
+      const primary = tag.toLowerCase().split('-')[0]
+      if (primary === 'zh' || primary === 'en') return primary
+    }
+    return 'zh'
+  }
+
+  function menuLabels() {
+    if (state.locale === 'en') {
+      return {
+        enable: 'Enable Traffic Light',
+        disable: 'Disable Traffic Light',
+        enableAria: 'Enable floating traffic light',
+        disableAria: 'Disable floating traffic light',
+        enableTitle: 'Enable the floating traffic light for this session',
+        disableTitle: 'Disable the floating traffic light for this session',
+        error: 'Could not update the traffic light. Please try again.',
+      }
+    }
+    return {
+      enable: '开启红绿灯',
+      disable: '关闭红绿灯',
+      enableAria: '开启悬浮灯',
+      disableAria: '关闭悬浮灯',
+      enableTitle: '开启当前 Session 悬浮灯',
+      disableTitle: '关闭当前 Session 悬浮灯',
+      error: '红绿灯设置失败，请重试',
+    }
   }
 
   function titleForProjectRow(row) {
@@ -205,14 +243,15 @@
 
   function renderMenuItem(item, session) {
     const busy = state.busyIds.has(session.id)
+    const labels = menuLabels()
     item.dataset.sessionId = session.id
     item.dataset.enabled = String(session.enabled)
     if (item instanceof HTMLButtonElement) item.disabled = busy
     else item.setAttribute('aria-disabled', String(busy))
     item.setAttribute('aria-checked', String(session.enabled))
-    item.setAttribute('aria-label', session.enabled ? '关闭悬浮灯' : '开启悬浮灯')
-    item.title = session.enabled ? '关闭当前 Session 悬浮灯' : '开启当前 Session 悬浮灯'
-    setMenuLabel(item, session.enabled ? '关闭红绿灯' : '开启红绿灯')
+    item.setAttribute('aria-label', session.enabled ? labels.disableAria : labels.enableAria)
+    item.title = session.enabled ? labels.disableTitle : labels.enableTitle
+    setMenuLabel(item, session.enabled ? labels.disable : labels.enable)
   }
 
   async function toggleSession(sessionId, item) {
@@ -232,7 +271,7 @@
       applySnapshot(await response.json())
     } catch (error) {
       item.dataset.error = 'true'
-      item.title = '红绿灯设置失败，请重试'
+      item.title = menuLabels().error
       window.setTimeout(() => {
         delete item.dataset.error
         injectMenuItems()
@@ -252,6 +291,7 @@
   function applySnapshot(snapshot) {
     state.groups = Array.isArray(snapshot.groups) ? snapshot.groups : []
     state.flatSessions = Array.isArray(snapshot.flatSessions) ? snapshot.flatSessions : []
+    state.locale = resolveLocale(snapshot.localePreference)
     syncRows()
     injectMenuItems()
   }

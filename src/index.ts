@@ -5,15 +5,18 @@ import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionHeader } from '@deepseek-ai/dsh-session'
+import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-agent-loop'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-session'
+import type {} from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-user-approval'
 import Schema from '@deepseek-ai/schemastery'
 import { DesktopProcessController } from './desktop-process.js'
 import { registerRoutes, SseHub } from './http.js'
 import type { SessionView } from './contracts.js'
+import { readDshLocalePreference, type DshLocale } from './locale.js'
 import type { SessionSwitchGroup } from './session-settings.js'
 import { resolveSessionSettingsFilePath, SessionSettingsStore } from './session-settings.js'
 import { resolveStateFilePath, StateFilePublisher } from './state-file.js'
@@ -22,6 +25,7 @@ import type {} from './session-persistence.js'
 import type { WorkspaceRecord } from './workspace-settings.js'
 
 export const name = 'dsh-traffic-light'
+const dshLocaleSettingsNamespace = 'locale' as SettingsNamespace
 export const inject = [
   'agents',
   'sessions',
@@ -48,6 +52,19 @@ export const Config: Schema<Config> = Schema.object({
 
 export function apply(ctx: Context, config: Config): void {
   assertBasePath(config.basePath)
+
+  let localePreference: DshLocale | undefined
+  ctx.inject(['settings'], settingsCtx => {
+    const refreshLocalePreference = () => {
+      localePreference = readDshLocalePreference(
+        settingsCtx.settings.get(dshLocaleSettingsNamespace),
+      )
+    }
+    refreshLocalePreference()
+    return settingsCtx.on('settings/updated', namespace => {
+      if (namespace === dshLocaleSettingsNamespace) refreshLocalePreference()
+    })
+  })
 
   const store = new TrafficLightStore(config.completedHoldMs)
   const webRoot = fileURLToPath(new URL('../web/', import.meta.url))
@@ -208,6 +225,7 @@ export function apply(ctx: Context, config: Config): void {
         sessionSettings,
       ))
     },
+    localePreference: () => localePreference,
     toggleSession: async (sessionId, enabled) => {
       await migrateSessionSettings()
       const sessions = store.snapshot().sessions

@@ -60,14 +60,14 @@ The first installation downloads the desktop runtime required by the floating wi
 
 1. Open the Session you want to monitor in DSH.
 2. Open that Session's three-dot menu.
-3. Select `开启红绿灯` (Enable Traffic Light).
+3. Select **Enable Traffic Light**.
 4. A floating desktop light appears for that Session.
 5. Repeat these steps for any other Sessions you want to monitor.
 
 There are two ways to close one floating light:
 
-- Select `关闭红绿灯` (Disable Traffic Light) from the corresponding Session menu.
-- Right-click the floating light and select `关闭悬浮灯` (Close Floating Light).
+- Select **Disable Traffic Light** from the corresponding Session menu.
+- Right-click the floating light and choose its close action.
 
 Closing one Session's light does not close any other Session lights.
 
@@ -96,7 +96,7 @@ Light selection is saved per Session, not per workspace:
 
 ## Troubleshooting
 
-### The Session menu does not show `开启红绿灯`
+### The Session menu does not show **Enable Traffic Light**
 
 Make sure the plugin was installed into the `web` profile, then stop and restart `dsh web`. Refreshing the browser page alone may not load the plugin menu after installation.
 
