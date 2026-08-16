@@ -87,6 +87,14 @@ export function apply(ctx: Context, config: Config): void {
     { warn: (message, error) => { logger.warn(message, error) } },
   )
 
+  // Prepare Electron after the Host gets a chance to finish its own startup.
+  // This does not open a desktop window.  It only restores the normal Electron
+  // install step that DSH's guarded pnpm installation may have skipped.
+  ctx.effect(() => {
+    const timer = setTimeout(() => { void desktop.prewarmRuntime() }, 0)
+    return () => { clearTimeout(timer) }
+  }, 'dsh-traffic-light.desktop-runtime-prewarm')
+
   const officialWorkspaces = (): WorkspaceRecord[] => ctx.workspaceRegistry.list().map(workspace => ({
     id: String(workspace.id),
     path: workspace.path,
@@ -260,7 +268,7 @@ export function apply(ctx: Context, config: Config): void {
       active = false
       unsubscribe()
       await publishDesktop(store.snapshot(), false)
-      await desktop.setDesiredRunning(false)
+      desktop.dispose()
     }
   }, 'dsh-traffic-light.snapshot-relay')
 

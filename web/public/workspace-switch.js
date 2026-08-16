@@ -43,6 +43,9 @@
         disableAria: 'Disable floating traffic light',
         enableTitle: 'Enable the floating traffic light for this session',
         disableTitle: 'Disable the floating traffic light for this session',
+        preparing: 'Preparing Traffic Light…',
+        preparingAria: 'Preparing floating traffic light',
+        preparingTitle: 'Preparing the desktop traffic-light runtime',
         error: 'Could not update the traffic light. Please try again.',
       }
     }
@@ -53,6 +56,9 @@
       disableAria: '关闭悬浮灯',
       enableTitle: '开启当前 Session 悬浮灯',
       disableTitle: '关闭当前 Session 悬浮灯',
+      preparing: '正在准备红绿灯…',
+      preparingAria: '正在准备悬浮灯',
+      preparingTitle: '正在准备桌面红绿灯运行组件',
       error: '红绿灯设置失败，请重试',
     }
   }
@@ -249,15 +255,22 @@
     if (item instanceof HTMLButtonElement) item.disabled = busy
     else item.setAttribute('aria-disabled', String(busy))
     item.setAttribute('aria-checked', String(session.enabled))
-    item.setAttribute('aria-label', session.enabled ? labels.disableAria : labels.enableAria)
-    item.title = session.enabled ? labels.disableTitle : labels.enableTitle
-    setMenuLabel(item, session.enabled ? labels.disable : labels.enable)
+    item.setAttribute('aria-label', busy
+      ? labels.preparingAria
+      : (session.enabled ? labels.disableAria : labels.enableAria))
+    item.title = busy
+      ? labels.preparingTitle
+      : (session.enabled ? labels.disableTitle : labels.enableTitle)
+    setMenuLabel(item, busy
+      ? labels.preparing
+      : (session.enabled ? labels.disable : labels.enable))
   }
 
   async function toggleSession(sessionId, item) {
-    const session = allSessions().find(candidate => candidate.id === sessionId)
+    const session = sessionForId(sessionId)
     if (session === undefined || state.busyIds.has(session.id)) return
 
+    let didUpdate = false
     state.busyIds.add(session.id)
     injectMenuItems()
     try {
@@ -269,6 +282,8 @@
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       applySnapshot(await response.json())
+      didUpdate = true
+      refreshClickedMenuItem(item, sessionId)
     } catch (error) {
       item.dataset.error = 'true'
       item.title = menuLabels().error
@@ -279,8 +294,26 @@
       console.warn('[dsh-traffic-light] Session toggle failed', error)
     } finally {
       state.busyIds.delete(session.id)
+      if (!didUpdate) {
+        if (item instanceof HTMLButtonElement) item.disabled = false
+        else item.setAttribute('aria-disabled', 'false')
+        return
+      }
+      refreshClickedMenuItem(item, sessionId)
       injectMenuItems()
     }
+  }
+
+  function sessionForId(sessionId) {
+    return allSessions().find(candidate => candidate.id === sessionId)
+  }
+
+  // The DSH menu remains open for this custom action. Refresh the exact node
+  // that was clicked as well as any injected menu item, so its text changes
+  // immediately even if DSH reuses or moves the portal while handling click.
+  function refreshClickedMenuItem(item, sessionId) {
+    const session = sessionForId(sessionId)
+    if (session !== undefined) renderMenuItem(item, session)
   }
 
   function allSessions() {
@@ -332,6 +365,12 @@
       }
       return
     }
+
+    // This listener runs during capture, before the traffic-light item's own
+    // click handler. Keep the Session context for that click so the successful
+    // toggle response can immediately re-render the still-open menu item.
+    const trafficItem = target?.closest('.dsh-traffic-menu-item')
+    if (trafficItem instanceof HTMLElement) return
 
     // Do not let a Workspace menu reuse the last Session id. DSH renders both
     // menus in a portal, so the menu itself is not enough to identify which
